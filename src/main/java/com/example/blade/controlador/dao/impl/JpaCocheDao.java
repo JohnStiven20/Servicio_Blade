@@ -2,7 +2,6 @@ package com.example.blade.controlador.dao.impl;
 
 import java.net.SocketException;
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.List;
 
 import com.example.blade.controlador.dao.CocheDao;
@@ -19,35 +18,6 @@ public class JpaCocheDao implements CocheDao {
     private EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("default");
 
     public JpaCocheDao() {
-    }
-
-    @Override
-    public Coche getCocheById(int cod) throws Exception, NoResultException {
-        EntityManager entityManager = null;
-        try {
-            entityManager = entityManagerFactory.createEntityManager();
-            entityManager.getTransaction().begin();
-
-            Coche cocheEncontrado = entityManager
-                    .createQuery("SELECT c FROM Coche c WHERE c.id = :cod", Coche.class)
-                    .setParameter("cod", cod)
-                    .getSingleResult();
-
-            entityManager.getTransaction().commit();
-            return cocheEncontrado;
-        } catch (NoResultException e) {
-            throw new NoResultException("No se ha encontrado el coche por id");
-        } catch (Exception e) {
-            throw new Exception("Error en algo", e);
-        } finally {
-            entityManager.close();
-        }
-    }
-
-    @Override
-    public Iterable<String> getAllNombresMarcas() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAllNombresMarcas'");
     }
 
     @Override
@@ -103,17 +73,6 @@ public class JpaCocheDao implements CocheDao {
             return jpaCocheDao;
         }
         return jpaCocheDao;
-    }
-
-    @Override
-    public void addCoche(int cod, String matricula, String marca, String modelo) {
-        Coche coche = Coche.builder()
-                .matricula(matricula)
-                .marca(marca)
-                .modelo(modelo)
-                .date(new Date())
-                .build();
-        this.addCoche(coche);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.example.blade.controlador;
 
+import java.net.SocketException;
 import java.sql.SQLException;
 
 import com.example.blade.controlador.dao.CocheDao;
@@ -9,13 +10,11 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.hellokaton.blade.annotation.Path;
 import com.hellokaton.blade.annotation.request.Body;
-import com.hellokaton.blade.annotation.request.PathParam;
 import com.hellokaton.blade.annotation.route.DELETE;
 import com.hellokaton.blade.annotation.route.GET;
 import com.hellokaton.blade.annotation.route.POST;
 import com.hellokaton.blade.annotation.route.PUT;
 import com.hellokaton.blade.mvc.http.Response;
-
 
 @Path
 public class ControllerCoche {
@@ -42,8 +41,16 @@ public class ControllerCoche {
     }
 
     @GET("/api/coches")
-    public void getAllCoches(Response response, @PathParam int codigo) throws SQLException {
-        response.json(cocheDao.getAllCoches());
+    public void getAllCoches(Response response) {
+        try {
+            response.json(cocheDao.getAllCoches());
+        } catch (SocketException se) {
+            response.status(500).body("Error de conexión: " + se.getMessage());
+        } catch (SQLException sqle) {
+            response.status(500).body("Error en la base de datos: " + sqle.getMessage());
+        } catch (Exception e) {
+            response.status(500).body("Error inesperado: " + e.getMessage());
+        }
     }
 
     @PUT("/api/cochesL")
@@ -52,12 +59,12 @@ public class ControllerCoche {
             Coche cocheRecibido = new Gson().fromJson(body, Coche.class);
 
             Coche cocheActualizado = cocheDao.updateCoche(cocheRecibido);
-            response.body("Coche actualizado correctamente: " +
-                    "ID: " + cocheActualizado.getId() + ", " +
-                    "Matrícula: " + cocheActualizado.getMatricula() + ", " +
-                    "Marca: " + cocheActualizado.getMarca() + ", " +
-                    "Modelo: " + cocheActualizado.getModelo() + ", " +
-                    "Fecha: " + cocheActualizado.getDate());
+            response.body("Coche actualizado correctamente: "
+                    + "ID: " + cocheActualizado.getId() + ", "
+                    + "Matrícula: " + cocheActualizado.getMatricula() + ", "
+                    + "Marca: " + cocheActualizado.getMarca() + ", "
+                    + "Modelo: " + cocheActualizado.getModelo() + ", "
+                    + "Fecha: " + cocheActualizado.getDate());
 
         } catch (JsonSyntaxException jse) {
             response.status(400).body("Error: JSON inválido");

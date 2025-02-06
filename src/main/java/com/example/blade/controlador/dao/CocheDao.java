@@ -1,5 +1,6 @@
 package com.example.blade.controlador.dao;
 
+import java.net.SocketException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -12,7 +13,7 @@ public interface CocheDao {
 
     Coche getCocheById(int cod) throws Exception, NoResultException;
     Iterable<String> getAllNombresMarcas();
-    List<Coche> getAllCoches() throws SQLException;
+    List<Coche> getAllCoches() throws SQLException , SocketException;
     Coche updateCoche(Coche coche)  throws Exception;
     void addCoche(int cod, String matricula, String marca, String modelo);
     boolean addCoche(Coche coche);

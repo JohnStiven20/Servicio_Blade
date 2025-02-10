@@ -12,81 +12,71 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.Persistence;
 
 /**
- * Implementación de la interfaz {@link CocheDao} utilizando JPA
- * <p>
- * Esta clase se encarga de realizar operaciones CRUD (crear, leer, actualizar y
- * eliminar) sobre la entidad {@link Coche} mediante el uso de un
- * {@link EntityManagerFactory}. Se utiliza la unidad de persistencia nombrada
- * "default"
- * </p>
- * 
- * @author Jonh Stiven Solano Macas
- * 
+ * Implementación JPA de la interfaz {@link CocheDao} para realizar operaciones
+ * CRUD sobre la entidad {@link Coche}
+ *
+ * Utiliza un {@link EntityManagerFactory} configurado para la unidad de
+ * persistencia "default"
  */
 public class JpaCocheDao implements CocheDao {
 
-    /**
-     * Instancia única (singleton) de {@code JpaCocheDao}
-     */
+    // Instancia singleton de JpaCocheDao para asegurar que solo exista una única instancia en la aplicación
     private static JpaCocheDao jpaCocheDao = null;
 
-    /**
-     * Factoría de gestores de entidad (EntityManagerFactory) configurada para
-     * la unidad de persistencia "default"
-     */
+    // Factoría de gestores de entidad, configurada con la unidad de persistencia "default"
     private final EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("default");
 
     /**
-     * Constructor público por defecto.
+     * Constructor público por defecto
      */
     public JpaCocheDao() {
     }
 
     /**
-     * Recupera todos los coches almacenados en la base de datos
+     * Obtiene todos los coches almacenados en la base de datos
      * <p>
-     * Este método utiliza un {@link EntityManager} para ejecutar una consulta
-     * JPQL que obtiene todos los objetos {@link Coche} existentes
+     * Crea un {@link EntityManager} y ejecuta una consulta JPQL para recuperar
+     * todos los registros de la entidad {@link Coche}. Si ocurre algún error,
+     * se captura y se lanza una excepción con un mensaje descriptivo.
      * </p>
      *
-     * @return una lista de todos los objetos {@link Coche}.
-     * @throws Exception si ocurre algún error inesperado al obtener los coches
+     * @return Una lista con todos los objetos {@link Coche}.
+     * @throws Exception Si ocurre algún error durante la consulta o la
+     * conexión
      */
     @Override
     public List<Coche> getAllCoches() throws Exception {
-
         try (EntityManager entityManager = entityManagerFactory.createEntityManager()) {
-
-            List<Coche> coches = entityManager.createQuery("SELECT c FROM Coche c", Coche.class).getResultList();
-            return coches;
-
+            return entityManager.createQuery("SELECT c FROM Coche c", Coche.class).getResultList();
         } catch (Exception e) {
-            throw new Exception("Error inesperado al obtener los coches");
+            throw new Exception("Error inesperado al obtener los coches", e);
         }
     }
 
     /**
      * Actualiza un coche existente en la base de datos
      * <p>
-     * Se busca el coche por su identificador y se actualizan sus campos (marca,
-     * modelo y matrícula) con los valores proporcionados en el objeto pasado como
-     * parámetro. Además, si se intenta cambiar la matrícula, se verifica que no
-     * exista otro coche con la misma matrícula para evitar duplicados
+     * Se busca el coche actual en la base de datos utilizando su ID. Si la
+     * matrícula ha sido modificada, se verifica que no exista otro coche con la
+     * misma matrícula para evitar duplicados. Si la verificación es correcta,
+     * se inicia una transacción, se actualiza el coche utilizando el método
+     * merge y se confirma la transacción
      * </p>
      *
-     * @param coche El objeto {@link Coche} que contiene la información actualizada.
-     * @throws Exception Si el coche no existe, si la matrícula ya está registrada o
-     *                   si ocurre un error en la actualización
+     * @param coche Objeto {@link Coche} con los datos actualizados
+     * @throws Exception Si el coche no existe, si la nueva matrícula ya está en
+     * uso o si ocurre un error durante la actualización
      */
     @Override
     public void updateCoche(Coche coche) throws Exception {
-
         try (EntityManager entityManager = entityManagerFactory.createEntityManager()) {
 
             Coche cocheActual = entityManager.find(Coche.class, coche.getId());
+            if (cocheActual == null) {
+                throw new Exception("Coche no encontrado con ID: " + coche.getId());
+            }
 
             if (!cocheActual.getMatricula().equals(coche.getMatricula())) {
-
                 boolean matriculaDuplicada = !entityManager.createQuery(
                         "SELECT c FROM Coche c WHERE c.matricula = :matricula AND c.id != :id", Coche.class)
                         .setParameter("matricula", coche.getMatricula())
@@ -104,22 +94,22 @@ public class JpaCocheDao implements CocheDao {
             entityManager.getTransaction().commit();
 
         } catch (Exception e) {
-            throw new Exception("Error al actualizar el coche");
+            throw new Exception("Error al actualizar el coche: " + e.getMessage(), e);
         }
     }
 
     /**
-     * Agrega un nuevo coche a la base de datos.
+     * Agrega un nuevo coche a la base de datos
      * <p>
-     * Antes de persistir el nuevo objeto {@link Coche}, se verifica que no
-     * exista ya otro coche con la misma matrícula. Si se encuentra un coche con
-     * la misma matrícula, se lanza una excepción indicando que no se
-     * puede duplicar la matrícula.
+     * Antes de persistir el nuevo objeto {@link Coche}, se ejecuta una consulta
+     * para verificar que no exista otro coche con la misma matrícula. Si se
+     * detecta duplicidad, se lanza una excepción. De lo contrario, se inicia
+     * una transacción, se persiste el objeto y se confirma la transacción
      * </p>
      *
-     * @param coche El objeto {@link Coche} que se desea agregar.
-     * @throws SQLException Si se detecta una matrícula duplicada o si ocurre
-     *                      algún error al persistir el coche.
+     * @param coche Objeto {@link Coche} que se desea agregar.
+     * @throws SQLException Si se detecta una matrícula duplicada o si ocurre un
+     * error al persistir el coche
      */
     @Override
     public void addCoche(Coche coche) throws SQLException {
@@ -140,50 +130,77 @@ public class JpaCocheDao implements CocheDao {
             gestorEntidades.getTransaction().commit();
 
         } catch (Exception e) {
-            throw new SQLException("Error al agregar el coche");
+            throw new SQLException("Error al agregar el coche: " + e.getMessage(), e);
         }
     }
 
     /**
-     * Elimina un coche de la base de datos.
+     * Elimina un coche de la base de datos
      * <p>
-     * Para eliminar el coche se realiza un merge del objeto proporcionado para
-     * asegurarse de que esté gestionado por el contexto de persistencia y, a
-     * continuación, se procede a su eliminación.
+     * Para eliminar un coche se realiza un merge del objeto recibido para
+     * asegurar que esté gestionado por el contexto de persistencia. Luego, se
+     * inicia una transacción, se elimina el objeto y se confirma la
+     * transacción
      * </p>
      *
-     * @param coche el objeto {@link Coche} que se desea eliminar.
-     * @throws Exception si ocurre algún error durante la eliminación.
+     * @param coche Objeto {@link Coche} que se desea eliminar.
+     * @throws Exception Si ocurre algún error durante el proceso de
+     * eliminación
      */
     @Override
     public void delete(Coche coche) throws Exception {
-        try {
-            try (EntityManager entityManager = entityManagerFactory.createEntityManager()) {
+        try (EntityManager entityManager = entityManagerFactory.createEntityManager()) {
 
-                entityManager.getTransaction().begin();
-                Coche cocheConectado = entityManager.merge(coche);
-                entityManager.remove(cocheConectado);
-                entityManager.getTransaction().commit();
-            }
+            entityManager.getTransaction().begin();
+            Coche cocheConectado = entityManager.merge(coche);
+            entityManager.remove(cocheConectado);
+            entityManager.getTransaction().commit();
+
         } catch (Exception e) {
-            throw new SQLException("Error al eliminar el coche");
+            throw new SQLException("Error al eliminar el coche: " + e.getMessage(), e);
         }
     }
 
     /**
-     * Retorna una instancia singleton de {@link JpaCocheDao}.
+     * Busca un coche en la base de datos utilizando su matrícula
      * <p>
-     * Este método implementa el patrón singleton para garantizar que solo
-     * exista una única instancia de {@code JpaCocheDao} durante la vida de la
-     * aplicación.
+     * Ejecuta una consulta JPQL que filtra los registros de {@link Coche} por
+     * el campo matrícula. Si no se encuentra ningún registro, se lanza una
+     * excepción indicando que no existe el coche
      * </p>
      *
-     * @return la instancia única de {@link JpaCocheDao}.
+     * @param matricula Matrícula del coche a buscar.
+     * @return Objeto {@link Coche} que coincide con la matrícula indicada.
+     * @throws Exception Si no se encuentra el coche o si ocurre un error
+     * durante la consulta
+     */
+    @Override
+    public Coche findByMatricula(String matricula) throws Exception {
+        try (EntityManager entityManager = entityManagerFactory.createEntityManager()) {
+            // Ejecuta la consulta y retorna el único resultado.
+            return entityManager.createQuery("SELECT c FROM Coche c WHERE c.matricula = :matricula", Coche.class)
+                    .setParameter("matricula", matricula)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            throw new Exception("No existe el coche con la matrícula: " + matricula, e);
+        } catch (Exception e) {
+            throw new Exception("Error al buscar el coche: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Retorna la instancia singleton de {@link JpaCocheDao}.
+     * <p>
+     * Este método implementa el patrón singleton para garantizar que solo
+     * exista una única instancia de esta clase durante la vida de la
+     * aplicación, facilitando el acceso centralizado
+     * </p>
+     *
+     * @return Instancia única de {@link JpaCocheDao}
      */
     public static JpaCocheDao instancia() {
         if (jpaCocheDao == null) {
             jpaCocheDao = new JpaCocheDao();
-            return jpaCocheDao;
         }
         return jpaCocheDao;
     }

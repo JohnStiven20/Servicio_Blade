@@ -6,7 +6,6 @@ import com.example.blade.controlador.dao.CocheDao;
 import com.example.blade.controlador.dao.impl.JpaCocheDao;
 import com.example.blade.modelo.Coche;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.hellokaton.blade.annotation.Path;
 import com.hellokaton.blade.annotation.request.Body;
 import com.hellokaton.blade.annotation.request.PathParam;
@@ -34,6 +33,10 @@ public class ControllerCoche {
     // Instancia del DAO para acceder a las operaciones CRUD sobre la entidad Coche
     private final CocheDao cocheDao = JpaCocheDao.instancia();
 
+    static {
+        System.out.println("JpaCocheDao instanciado correctamente");
+    }
+
     /**
      * Endpoint para agregar un nuevo coche a la base de datos
      * <p>
@@ -54,7 +57,7 @@ public class ControllerCoche {
     @POST("/api/coche")
     public void addCoche(@Body String body, Response response) {
         try {
-            Coche coche = new Gson().fromJson(body, new TypeToken<Coche>() {}.getType());
+            Coche coche = new Gson().fromJson(body, Coche.class);
             cocheDao.addCoche(coche);
             response.status(200).body("Agregado Correctamente");
         } catch (SQLException e) {

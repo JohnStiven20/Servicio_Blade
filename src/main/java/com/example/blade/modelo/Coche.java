@@ -51,4 +51,15 @@ public class Coche {
      * Fecha de registro del coche
      */
     private Date date;
+
+   public  String  getMatricula(){
+      return  this.matricula; 
+   }
+
+   public  int  getId(){
+    return  this.id ;  
+ }
+
+
+
 }

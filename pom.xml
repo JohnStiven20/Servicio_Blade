@@ -1,125 +1,139 @@
-
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <!--  Versión del modelo de POM  -->
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/maven-v4_0_0.xsd">
+
   <modelVersion>4.0.0</modelVersion>
-  <!--  Datos básicos del proyecto  -->
-  <groupId>com.example.blade</groupId>
-  <artifactId>stiven</artifactId>
+  
+  <groupId>app_concesionario</groupId>
+  <artifactId>demo</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>stiven</name>
-  <url>http://www.example.com</url>
-  <!--  Propiedades de compilación  -->
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!--  Compilar con Java 17  -->
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
-      <maven.compiler.release>17</maven.compiler.release>
-    
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
   </properties>
-  <!--  Dependencias  -->
+
   <dependencies>
-    <!--  JUnit para pruebas  -->
+    <!-- JavaFX -->
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-controls</artifactId>
+      <version>13</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-fxml</artifactId>
+      <version>13</version>
+    </dependency>
+
+    <!-- JUnit -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
-    <!--  Blade Framework  -->
+
+    <!-- Blade Framework -->
     <dependency>
       <groupId>com.hellokaton</groupId>
       <artifactId>blade-core</artifactId>
       <version>2.1.2.RELEASE</version>
     </dependency>
-    <!--  Lombok (para reducir código boilerplate)  -->
+
+    <!-- Lombok -->
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>1.18.30</version>
       <scope>provided</scope>
     </dependency>
-    <!--  Template Jetbrick para Blade  -->
+
+    <!-- Plantilla Jetbrick (Blade) -->
     <dependency>
       <groupId>com.hellokaton</groupId>
       <artifactId>blade-template-jetbrick</artifactId>
       <version>0.2.1</version>
     </dependency>
-    <!--  OKHttp para peticiones HTTP/HTTPS  -->
+
+    <!-- OKHttp (peticiones HTTP/HTTPS) -->
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
       <version>4.12.0</version>
     </dependency>
-    <!--  Moshi para parsing JSON  -->
+
+    <!-- Moshi (JSON <-> Clases) -->
     <dependency>
       <groupId>com.squareup.moshi</groupId>
       <artifactId>moshi</artifactId>
       <version>1.15.0</version>
     </dependency>
-    <!--  Hibernate Core  -->
+
+    <!-- Hibernate Core -->
     <dependency>
       <groupId>org.hibernate.orm</groupId>
       <artifactId>hibernate-core</artifactId>
       <version>6.0.2.Final</version>
     </dependency>
-    <!--  MySQL Connector  -->
+
+    <!-- Conector MySQL -->
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>8.0.32</version>
+      <version>8.0.33</version>
     </dependency>
-    <!--  Jakarta Persistence API  -->
+
+    <!-- Jakarta Persistence -->
     <dependency>
       <groupId>jakarta.persistence</groupId>
       <artifactId>jakarta.persistence-api</artifactId>
       <version>3.1.0</version>
     </dependency>
+
+    <!-- Forzar ASM 9.5 para evitar UnsupportedOperationException -->
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>9.5</version>
+    </dependency>
   </dependencies>
-  <!--  Configuración de compilación y empaquetado  -->
+
   <build>
     <plugins>
-      <!--  Plugin que empaqueta en un .jar. 
-                 Incluimos la clase principal en el MANIFEST para que sea ejecutable  -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.2.2</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <!--  Ajusta el paquete/clase que tenga tu método public static void main  -->
-              <mainClass>com.example.blade.Main</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
-      <!--  Plugin de compilación (Java)  -->
+      <!-- Plugin de compilación Maven -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.0</version>
+        <configuration>
+          <release>11</release>
+        </configuration>
       </plugin>
-      <!--  Plugin para limpiar (elimina la carpeta target/ al hacer 'mvn clean')  -->
+
+      <!-- Plugin JavaFX (para ejecutar con 'mvn clean javafx:run') -->
       <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>3.1.0</version>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-maven-plugin</artifactId>
+        <version>0.0.6</version>
+        <executions>
+          <execution>
+            <id>default-cli</id>
+            <configuration>
+              <!-- Ajusta la clase principal según corresponda -->
+              <mainClass>com.example.blade.App</mainClass>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
-      <!--  Plugin para manejar recursos (copiar archivos de src/main/resources, etc.)  -->
-      <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>3.0.2</version>
-      </plugin>
-      <!--  Plugin para ejecutar las pruebas unitarias  -->
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.1</version>
-      </plugin>
+
+      <!-- Plugin para generar un fat/uber JAR (incluye dependencias) -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.5.0</version>
+        <version>3.3.0</version>
         <configuration>
           <archive>
             <manifest>
@@ -140,6 +154,8 @@
           </execution>
         </executions>
       </plugin>
+
     </plugins>
   </build>
+
 </project>

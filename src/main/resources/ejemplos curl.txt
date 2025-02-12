@@ -1,6 +1,0 @@
-Listado de cursos
-curl http://localhost:9001/api/cursos
-
-Un curso
-curl http://localhost:9001/api/cursos/1
-

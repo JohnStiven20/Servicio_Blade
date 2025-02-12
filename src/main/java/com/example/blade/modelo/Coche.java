@@ -1,6 +1,9 @@
 package com.example.blade.modelo;
 
 import java.util.Date;
+
+import com.google.gson.annotations.SerializedName;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -50,6 +53,7 @@ public class Coche {
     /** 
      * Fecha de registro del coche
      */
+    @SerializedName("date")
     private Date date;
 
    public  String  getMatricula(){
